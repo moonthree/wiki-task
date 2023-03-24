@@ -4,6 +4,7 @@ import { getWikiList } from '~/api/wikiApi';
 import ReactPaginate from 'react-paginate';
 import { WikiResponse } from '~/types/sharedTypes';
 import { Link } from 'react-router-dom';
+import { Spinner } from '~/components/Spinner';
 
 export const WikiList = () => {
   const [currentPage, setCurrentPage] = useState(0);
@@ -17,7 +18,7 @@ export const WikiList = () => {
     setCurrentPage(data.selected);
   };
 
-  if (isLoading) return <div>로딩중</div>;
+  if (isLoading) return <Spinner />;
   if (error) return <div>에러</div>;
 
   return (

@@ -8,3 +8,8 @@ export interface WikiResponse {
   wikis: wiki[];
   totalPages: number;
 }
+
+export interface wikiData {
+  title: string;
+  content: string;
+}

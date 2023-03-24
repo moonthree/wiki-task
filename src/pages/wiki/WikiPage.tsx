@@ -1,13 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
-import React from 'react';
 import { useParams } from 'react-router-dom';
 import { getAllWikis, getWiki } from '~/api/wikiApi';
-import DOMPurify from 'dompurify';
-import { WikiHeader } from '~/components/share/WikiHeader';
 import { RelatedWikis } from './components/RelatedWikis';
+import { WikiPageHeader } from './components/WikiPageHeader';
+import { Spinner } from '~/components/Spinner';
+import { Link } from 'react-router-dom';
 
 export const WikiPage = () => {
   const { id } = useParams<{ id: string }>();
+
   const {
     data: wiki,
     isLoading: wikiLoading,
@@ -19,49 +20,33 @@ export const WikiPage = () => {
     error: allWikisError,
   } = useQuery(['allWikis'], () => getAllWikis());
 
-  const linkifyWikiTitles = (content, wikis, currentWikiId) => {
-    const currentWiki = wikis.find((wiki) => wiki.id === currentWikiId);
-    const wikiTitles = wikis.map((wiki) => wiki.title);
-
-    // Function to replace the matched title with a link
-    const replaceWithLink = (matchedTitle) => {
-      const wiki = wikis.find((wiki) => wiki.title.toLowerCase() === matchedTitle.toLowerCase());
-      return `<a href="/wiki/${wiki.id}" class="text-blue-500 hover:underline">${matchedTitle}</a>`;
-    };
-
-    // Extract wiki titles from the content
-    const titleRegex = new RegExp('\\b(' + wikiTitles.join('|') + ')\\b', 'gi');
-    const matchedTitles = content.match(titleRegex);
-
-    if (matchedTitles) {
-      matchedTitles.forEach((matchedTitle) => {
-        if (currentWiki && matchedTitle.toLowerCase() !== currentWiki.title.toLowerCase()) {
-          content = content.replace(matchedTitle, replaceWithLink(matchedTitle));
-        }
-      });
-    }
-
-    return content;
+  const getLinkedContent = (content: string) => {
+    const words = content.split(' ');
+    return words.map((word, i) => {
+      const found = allWikis?.find((item) => item.title.toLowerCase() === word.toLowerCase());
+      if (found && found.id !== wiki?.id) {
+        return (
+          <Link to={`/wiki/${found.id}`} key={i} className='text-blue-500 font-bold underline'>
+            {word}{' '}
+          </Link>
+        );
+      } else {
+        return <span key={i}>{word} </span>;
+      }
+    });
   };
 
-  const linkedContent = wiki && allWikis && linkifyWikiTitles(wiki.content, allWikis, id);
-  const sanitizedContent = linkedContent && DOMPurify.sanitize(linkedContent);
-
-  if (wikiLoading || allWikisLoading) return <div>로딩중</div>;
+  if (wikiLoading || allWikisLoading) return <Spinner />;
   if (wikiError || allWikisError) return <div>에러</div>;
-
   return (
     <div className='w-[600px] mx-auto border-2 border-brand rounded'>
       {wiki && (
         <>
-          <WikiHeader title={wiki.title} buttonText={'수정'} />
-          <div className='p-3' dangerouslySetInnerHTML={{ __html: linkedContent }}></div>
+          <WikiPageHeader title={wiki.title} id={wiki.id} content={wiki.content} />
+          <div className='p-3'>{getLinkedContent(wiki.content)}</div>
           <RelatedWikis currentWikiId={wiki.id} currentWikiTitle={wiki.title} />
         </>
       )}
     </div>
   );
 };
-
-// dangerouslySetInnerHTML : xss 공격에 취약하므로, 사용시 주의해야함
-// dompurify 라이브러리를 사용하여 xss 공격을 방어할 수 있음

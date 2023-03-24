@@ -13,3 +13,6 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
+.input-css {
+  @apply mt-1 block border-b-2 w-full rounded-md border-gray-300 shadow-sm focus:outline-none p-3 focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50;
+}

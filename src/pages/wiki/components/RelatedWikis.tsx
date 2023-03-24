@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { getAllWikis } from '~/api/wikiApi';
+import { Spinner } from '~/components/Spinner';
 
 type RelatedWikisProps = {
   currentWikiId: string;
@@ -11,12 +11,15 @@ type RelatedWikisProps = {
 export const RelatedWikis = ({ currentWikiId, currentWikiTitle }: RelatedWikisProps) => {
   const { data: allWikis, isLoading, error } = useQuery(['allWikis'], () => getAllWikis());
 
-  if (isLoading) return <div>로딩중</div>;
-  if (error) return <div>에러</div>;
+  const relatedWikis = allWikis?.filter((wiki) => {
+    const words = wiki.content.toLowerCase().split(' ');
+    if (wiki.id !== currentWikiId && words.includes(currentWikiTitle.toLowerCase())) {
+      return wiki;
+    }
+  });
 
-  const relatedWikis = allWikis?.filter(
-    (wiki) => wiki.id !== currentWikiId && wiki.content.includes(currentWikiTitle),
-  );
+  if (isLoading) return <Spinner />;
+  if (error) return <div>에러</div>;
 
   return (
     <div className='p-3 mt-5 border-t-2 border-brand'>
