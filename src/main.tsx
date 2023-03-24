@@ -5,6 +5,7 @@ import App from './App';
 
 // styles
 import './index.css';
+import { WikiPage } from './pages/wiki/WikiPage';
 
 const router = createBrowserRouter([
   {
@@ -15,6 +16,10 @@ const router = createBrowserRouter([
         index: true,
         path: '/',
         element: <Home />,
+      },
+      {
+        path: '/wiki/:id',
+        element: <WikiPage />,
       },
     ],
   },
